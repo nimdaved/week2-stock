@@ -1,13 +1,16 @@
 package org.ab.controller;
 
+import java.net.URL;
 import java.sql.Date;
 
 import org.ab.domain.LoadResponse;
 import org.ab.domain.StockSummary;
+import org.ab.domain.UrlHolder;
 import org.ab.service.StockService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -34,6 +37,13 @@ public class StockController {
 		log.info("Starting to load file: {}", fileName);
 		int stockCount = stockService.loadStocks(file);
 		return new LoadResponse(fileName, stockCount);
+	}
+
+	@PostMapping("/load/web")
+	public @ResponseBody LoadResponse load(@RequestBody UrlHolder url) {
+		log.info("Starting to load from: {}", url.getUrl());
+		int stockCount = stockService.loadStocks(url.getUrl());
+		return new LoadResponse(url.getUrl(), stockCount);
 	}
 
 	@GetMapping("/summary/{symbol}")

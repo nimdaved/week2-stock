@@ -2,15 +2,18 @@ package org.ab.service;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.sql.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.ab.domain.StockItem;
 import org.ab.domain.StockSummary;
 import org.ab.repositories.StockRepository;
 import org.ab.repositories.StockSummaryRepositoy;
 import org.ab.util.StockStreamHandler;
+import org.ab.util.SupplierWithExcepetion;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -49,10 +52,18 @@ public class StockService {
 	 * @return
 	 */
 	public int loadStocks(MultipartFile file) {
-		final String filename = file.getOriginalFilename();
-		log.info("Starting to load stocks from {}", filename);
+		return loadStocks(file::getInputStream);
+	}
+	
+	public int loadStocks(String url) {
+		return loadStocks(()-> new URL(url).openConnection().getInputStream());
+	}
+	
+	public int loadStocks(SupplierWithExcepetion<InputStream, IOException> supplier) {
+		final String sourceName = "InputStream";
+		log.info("Starting to load stocks from {}", sourceName);
 		int stockCount = 0;
-		try (InputStream fileStream = file.getInputStream();
+		try (InputStream fileStream = supplier.get();
 				JsonParser parser = jsonStreamHandler.fromStream(fileStream)) {
 			StockItem item = null;
 			Set<StockItem> items = new HashSet<>(loadBatchSize);
@@ -74,12 +85,12 @@ public class StockService {
 			} while (item != null);
 
 		} catch (IOException e) {
-			String msg = "Unable to load file" + filename;
+			String msg = "Unable to load file" + sourceName;
 			log.error(msg, e);
 			throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, msg);
 		}
 
-		log.info("Loaded {} stocks from {}", stockCount, filename);
+		log.info("Loaded {} stocks from {}", stockCount, sourceName);
 
 		return stockCount;
 	}
@@ -96,4 +107,6 @@ public class StockService {
 	private static Date addDay(Date startDate) {
 		return Date.valueOf(startDate.toLocalDate().plusDays(1));
 	}
+	
+	
 }

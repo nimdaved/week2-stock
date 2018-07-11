@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.IOException;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 import org.ab.domain.LoadResponse;
 import org.ab.domain.StockItem;
 import org.ab.domain.StockSummary;
+import org.ab.domain.UrlHolder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.data.util.Pair;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -56,6 +59,18 @@ public class Week2StockApplicationTests {
 		LoadResponse lr = upload(fileName, create("SYM", new BigDecimal("34.21"), 123, new Date()));
 
 		assertEquals(1, (int) lr.getStockCount());
+	}
+	
+	@Test
+	public void testWebUpload() throws Exception {
+		UrlHolder url = new UrlHolder("https://bootcamp-training-files.cfapps.io/week2/week2-stocks.json");
+
+		ResultActions ra = mvc.perform(post("/load/web").contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsBytes(url))).andExpect(status().isOk());
+		LoadResponse lr = toDomainObject(ra, LoadResponse.class);
+		assertNotNull(lr);
+		assertEquals(url.getUrl(), lr.getFileName());
+		
 	}
 
 	@Test
