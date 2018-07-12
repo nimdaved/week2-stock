@@ -6,7 +6,6 @@ import java.net.URL;
 import java.sql.Date;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import org.ab.domain.StockItem;
 import org.ab.domain.StockSummary;
@@ -36,7 +35,6 @@ public class StockService {
 
 	public StockService(StockStreamHandler jsonStreamHandler, StockRepository stockRepository,
 			StockSummaryRepositoy stockSummaryRepository) {
-		super();
 		this.jsonStreamHandler = jsonStreamHandler;
 		this.stockRepository = stockRepository;
 		this.stockSummaryRepository = stockSummaryRepository;
@@ -54,17 +52,16 @@ public class StockService {
 	public int loadStocks(MultipartFile file) {
 		return loadStocks(file::getInputStream);
 	}
-	
+
 	public int loadStocks(String url) {
-		return loadStocks(()-> new URL(url).openConnection().getInputStream());
+		return loadStocks(() -> new URL(url).openConnection().getInputStream());
 	}
-	
+
 	public int loadStocks(SupplierWithExcepetion<InputStream, IOException> supplier) {
 		final String sourceName = "InputStream";
 		log.info("Starting to load stocks from {}", sourceName);
 		int stockCount = 0;
-		try (InputStream fileStream = supplier.get();
-				JsonParser parser = jsonStreamHandler.fromStream(fileStream)) {
+		try (InputStream fileStream = supplier.get(); JsonParser parser = jsonStreamHandler.fromStream(fileStream)) {
 			StockItem item = null;
 			Set<StockItem> items = new HashSet<>(loadBatchSize);
 			do {
@@ -107,6 +104,5 @@ public class StockService {
 	private static Date addDay(Date startDate) {
 		return Date.valueOf(startDate.toLocalDate().plusDays(1));
 	}
-	
-	
+
 }

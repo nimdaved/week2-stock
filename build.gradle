@@ -1,6 +1,7 @@
 buildscript {
 	ext {
 		springBootVersion = '2.0.3.RELEASE'
+		mariaDbVersion='1.5.9'
 	}
 	repositories {
 		mavenCentral()

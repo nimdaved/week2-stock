@@ -1,6 +1,5 @@
 package org.ab.controller;
 
-import java.net.URL;
 import java.sql.Date;
 
 import org.ab.domain.LoadResponse;
@@ -27,7 +26,6 @@ public class StockController {
 	private final StockService stockService;
 
 	public StockController(StockService stockService) {
-		super();
 		this.stockService = stockService;
 	}
 
